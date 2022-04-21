@@ -1,0 +1,12 @@
+[workspace]
+
+members = [
+	"mobilenet-v2",
+]
+
+[profile.release]
+debug = false
+lto = true
+opt-level = 'z'
+panic = 'abort'
+codegen-units = 1

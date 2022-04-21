@@ -1,0 +1,150 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+IPFS_API_PORT="5002"
+IPFS_API_HOST="127.0.0.1"
+IPFS_API_MULTIADDRESS="/ip4/${IPFS_API_HOST}/tcp/${IPFS_API_PORT}"
+IPFS="ipfs --api ${IPFS_API_MULTIADDRESS}"
+STARDOG_PORT="5821"
+STARDOG_HOST="localhost"
+STARDOG_DB="webfunction"
+STARDOG_CONNECTION_STRING="http://${STARDOG_HOST}:${STARDOG_PORT}/${STARDOG_DB}"
+STARDOG_QUERY="stardog query execute ${STARDOG_CONNECTION_STRING}"
+WEBFUNCTION_PLUGIN_VERSION="1.0.3-SNAPSHOT"
+
+[tasks.default]
+dependencies = [ "build" ]
+
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.build]
+clear = true
+command = "cargo"
+args = ["build", "--release", "--target", "wasm32-unknown-unknown"]
+
+[tasks.test]
+command = "cargo"
+args = ["test", "--", "--nocapture"]
+
+[tasks.optimize_wasm]
+dependencies = [
+    "build",
+    ]
+script = [
+    "wasm-opt -O4 --strip-debug --strip-producers  ../target/wasm32-unknown-unknown/release/${CARGO_MAKE_CRATE_NAME}.wasm -o ../target/wasm32-unknown-unknown/release/${CARGO_MAKE_CRATE_NAME}_opt.wasm"
+]
+
+[tasks.deploy_snapshot_mfs]
+private = true
+workspace = false
+dependencies = ["test_clean_mfs"]
+script = '''
+#!/usr/bin/env bash
+
+mfs_snapshot_dir=$(date --iso-8601=minutes) #<-- test if dir alread exists, if yes fail you're running it too often
+$IPFS files mkdir --parents /snapshot/$mfs_snapshot_dir
+for dir in $(grep -v snapshot <(${IPFS} files ls / )); do
+    $IPFS files cp /$dir /snapshot/$mfs_snapshot_dir/$dir
+done
+'''
+
+[tasks.test_clean_mfs]
+private = true
+workspace = false
+script = '''
+#!/usr/bin/env bash
+
+$IPFS files rm -r /test
+$IPFS files mkdir /test
+'''
+
+[tasks.deploy_clean_mfs]
+private = true
+workspace = false
+script = '''
+#!/usr/bin/env bash
+workspace_path=$(sed -e 's#_#/#g' <<< $(basename $CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY))
+
+$IPFS files rm -r /stardog/$workspace_path
+
+for entry in $($IPFS files ls /stardog/$workspace_path); do
+    type=$(ipfs files stat --format='<type>' /stardog/$workspace_path/$entry | sed -z 's/\n$//')
+    if [ "$type" = "file" ]; then
+        $IPFS files rm /stardog/$workspace_path/$entry
+    fi
+done
+
+
+$IPFS files mkdir --parents /stardog/$workspace_path
+'''
+
+[tasks.test_deploy_wasm]
+workspace = false
+dependencies = [
+    "test_clean_mfs",
+    "test_deploy_workspace_wasm",
+    "test_publish_mfs_root",
+]
+
+[tasks.deploy_wasm]
+workspace = false
+dependencies = [
+    "deploy_snapshot_mfs",
+    "deploy_workspace_wasm",
+    "deploy_publish_mfs_root",
+]
+
+[tasks.deploy_workspace_wasm]
+run_task = { name = [
+    "optimize_wasm",
+    "deploy_to_ipfs"
+], fork = true}
+
+[tasks.test_deploy_workspace_wasm]
+run_task = { name = [
+    "optimize_wasm",
+    "test_deploy_to_ipfs"
+], fork = true}
+
+
+[tasks.deploy_to_ipfs]
+private = true
+script = '''
+#!/usr/bin/env bash
+
+wasm_path=$(sed -e 's#_#/#g' <<< $(basename $CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY))/$CARGO_MAKE_CRATE_NAME
+wasm_cid=$($IPFS add --quieter --pin=false ../target/wasm32-unknown-unknown/release/${CARGO_MAKE_CRATE_NAME}_opt.wasm)
+plugin_hash=$(${STARDOG_QUERY} --format JSON "prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/${WEBFUNCTION_PLUGIN_VERSION}/> select (wf:pluginHash() as ?pluginHash) {}" | jq .results.bindings[0].pluginHash.value | sed -z 's/"//g')
+$IPFS files mkdir --parents /stardog/$wasm_path
+$IPFS files rm /stardog/$wasm_path/$plugin_hash
+$IPFS files cp /ipfs/$wasm_cid /stardog/$wasm_path/$plugin_hash
+
+'''
+
+[tasks.test_deploy_to_ipfs]
+private = true
+script = '''
+#!/usr/bin/env bash
+
+wasm_path=$(sed -e 's#_#/#g' <<< $(basename $CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY))/$CARGO_MAKE_CRATE_NAME
+wasm_cid=$($IPFS add --quieter --pin=false ../target/wasm32-unknown-unknown/release/${CARGO_MAKE_CRATE_NAME}_opt.wasm)
+plugin_hash=$(${STARDOG_QUERY} --format JSON "prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/${WEBFUNCTION_PLUGIN_VERSION}/> select (wf:pluginHash() as ?pluginHash) {}" | jq .results.bindings[0].pluginHash.value | sed -z 's/"//g')
+$IPFS files mkdir --parents /test/stardog/$wasm_path
+$IPFS files cp /ipfs/$wasm_cid /test/stardog/$wasm_path/$plugin_hash
+
+'''
+
+[tasks.deploy_publish_mfs_root]
+private = true
+workspace = false
+script = '''
+$IPFS name publish $($IPFS files stat --hash /)
+'''
+
+[tasks.test_publish_mfs_root]
+private = true
+workspace = false
+script = '''
+$IPFS name publish --key test $($IPFS files stat --hash /test)
+'''

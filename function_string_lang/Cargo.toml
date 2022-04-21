@@ -1,0 +1,15 @@
+[workspace]
+
+members = [
+	"whatlang",
+	"detect",
+	"detectFromAllSpoken",
+	"detectFrom",
+]
+
+[profile.release]
+debug = false
+lto = true
+opt-level = 'z'
+panic = 'abort'
+codegen-units = 1

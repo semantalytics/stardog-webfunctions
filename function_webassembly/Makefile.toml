@@ -1,0 +1,98 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+IPFS_API_PORT="5002"
+IPFS_API_HOST="127.0.0.1"
+IPFS_API_MULTIADDRESS="/ip4/${IPFS_API_HOST}/tcp/${IPFS_API_PORT}"
+IPFS="ipfs --api ${IPFS_API_MULTIADDRESS}"
+
+[tasks.default]
+dependencies = [ "build" ]
+
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.build]
+clear = true
+command = "cargo"
+args = ["build", "--release", "--target", "wasm32-unknown-unknown"]
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+dependencies = ["clean"]
+
+[tasks.optimize_wasm]
+dependencies = [
+    "build",
+    ]
+script = [
+    "wasm-opt -O4 --strip-debug --strip-producers --minify-imports-and-exports ../target/wasm32-unknown-unknown/release/${CARGO_MAKE_CRATE_NAME}.wasm -o ../target/wasm32-unknown-unknown/release/${CARGO_MAKE_CRATE_NAME}_opt.wasm"
+]
+
+[tasks.echo]
+workspace = false
+script = [
+    "echo $CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY"
+]
+
+[tasks.deploy_snapshot_mfs]
+private = true
+workspace = false
+script = '''
+#!/usr/bin/env bash
+
+mfs_snapshot_dir=$(date --iso-8601=minutes) #<-- test if dir alread exists, if yes fail you're running it too often
+$IPFS files mkdir --parents /snapshot/$mfs_snapshot_dir
+for dir in $(grep -v snapshot <(${IPFS} files ls / )); do
+    $IPFS files cp /$dir /snapshot/$mfs_snapshot_dir/$dir
+done
+'''
+
+[tasks.deploy_clean_mfs]
+private = true
+workspace = false
+script = '''
+#!/usr/bin/env bash
+workspace_path=$(sed -e 's#_#/#g' <<< $(basename $CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY))
+$IPFS files rm -r /stardog/$workspace_path
+$IPFS files mkdir --parents /stardog/$workspace_path
+
+'''
+
+[tasks.deploy_wasm]
+workspace = false
+dependencies = [
+    "deploy_snapshot_mfs",
+    "deploy_clean_mfs",
+    "deploy_workspace_wasm",
+    "deploy_publish_mfs_root",
+]
+
+[tasks.deploy_workspace_wasm]
+run_task = { name = [
+    "optimize_wasm",
+    "deploy_to_ipfs"
+], fork = true}
+
+[tasks.deploy_to_ipfs]
+private = true
+script = '''
+#!/usr/bin/env bash
+
+wasm_path=$(sed -e 's#_#/#g' <<< $(basename $CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY))/$CARGO_MAKE_CRATE_NAME
+$IPFS files mkdir --parents /stardog/$wasm_path
+$IPFS files rm -r /stardog/$wasm_path
+$IPFS files mkdir --parents /stardog/$wasm_path
+wasm_cid=$($IPFS add --quieter --pin=false ../target/wasm32-unknown-unknown/release/${CARGO_MAKE_CRATE_NAME}_opt.wasm)
+$IPFS files cp /ipfs/$wasm_cid /stardog/$wasm_path/1
+
+#how to get plugin version
+    '''
+
+[tasks.deploy_publish_mfs_root]
+private = true
+workspace = false
+script = '''
+$IPFS name publish $($IPFS files stat --hash /)
+'''

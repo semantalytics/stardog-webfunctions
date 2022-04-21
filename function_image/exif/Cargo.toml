@@ -1,0 +1,15 @@
+[package]
+name = "exif"
+version = "1.0.0"
+authors = [""]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = { version = "1.0", features = [ "derive" ] }
+serde_json = { version = "1.0.59" }
+stardog_function = { git = "https://github.com/semantalytics/stardog-webfunctions" }
+base64 = "0.13.0"
+exif-rs = "0.1.0"

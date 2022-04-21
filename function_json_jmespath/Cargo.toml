@@ -1,0 +1,15 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+[workspace]
+
+members = [
+	"query",
+]
+
+[profile.release]
+debug = false
+lto = true
+opt-level = 'z'
+panic = 'abort'
+codegen-units = 1

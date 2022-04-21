@@ -1,0 +1,15 @@
+[package]
+name = "fsb"
+version = "1.0.0"
+authors = [""]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = { version = "1.0", features = [ "derive" ] }
+serde_json = { version = "1.0.59" }
+stardog_function = { git = "https://github.com/semantalytics/stardog-webfunctions" }
+fsb = { version = "0.1.1", default-features = false }
+base16ct = { version = "0.1.1", features = [ "alloc" ] }
