@@ -13,7 +13,5 @@ serde_json = { version = "1.0.59" }
 stardog_function = { git = "https://github.com/semantalytics/stardog-webfunctions" }
 
 [dev-dependencies]
-tracing = "0.1.33"
-tracing-subscriber = "0.3.11"
-test-env-log = { version = "0.2.8", default-features = false, features = ["trace"] }
-dockertest = "0.2.1"
+ureq = { version = "2.4.0", features = [ "json" ] }
+base64 = "0.13.0"

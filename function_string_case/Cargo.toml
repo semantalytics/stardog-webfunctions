@@ -1,0 +1,26 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+[workspace]
+
+members = [
+    "camel_case",
+    "capitalize",
+    "decapitalize",
+    "kebab_case",
+    "lower_case",
+    "lower_first",
+    "pascal_case",
+    "shouty_kebab_case",
+    "shouty_snake_case",
+    "snake_case",
+    "swap_case",
+    "title_case",
+]
+
+[profile.release]
+debug = false
+lto = true
+opt-level = 'z'
+panic = 'abort'
+codegen-units = 1

@@ -55,8 +55,10 @@ workspace = false
 script = '''
 #!/usr/bin/env bash
 
-$IPFS files rm -r /test
-$IPFS files mkdir /test
+wasm_path=/test/stardog/$(sed -e 's#_#/#g' <<< $(basename $CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY))
+echo "Clearing MFS test directory $wasm_path"
+$IPFS files rm -r $wasm_path || echo "...directory does not exist. Skipping."
+$IPFS files mkdir --parents $wasm_path
 '''
 
 [tasks.deploy_clean_mfs]

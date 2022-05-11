@@ -12,10 +12,10 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
     let values: Value = serde_json::from_str(args_str).unwrap();
 
     let binding = &values["results"]["bindings"][0];
-    let result = decode(binding["value_1"]["value"].as_str().unwrap()).unwrap();
+    let result = decode(binding["value_0"]["value"].as_str().unwrap()).unwrap();
 
     let sparql_query_result = json!({
-      "head": {"vars":["result"]}, "results":{"bindings":[{"result":{"type":"literal","value": result }}]}
+      "head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0":{"type":"literal","value": result }}]}
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();

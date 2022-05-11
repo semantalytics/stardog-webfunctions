@@ -11,14 +11,14 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
 
     let values: Value = serde_json::from_str(args_str).unwrap();
 
-    let value_1 = values["results"]["bindings"][0]["value_1"]["value"].as_str().unwrap();
+    let value = values["results"]["bindings"][0]["value_0"]["value"].as_str().unwrap();
 
-    let hash = Ripemd::digest(value_1);
+    let hash = Ripemd::digest(value);
 
     let hex_hash = base16ct::lower::encode_string(&hash);
 
     let sparql_query_result = json!({
-      "head": {"vars":["result"]}, "results":{"bindings":[{"result":{"type":"literal","value": hex_hash}}]}
+      "head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0":{"type":"literal","value": hex_hash}}]}
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();

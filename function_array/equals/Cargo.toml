@@ -11,3 +11,7 @@ crate-type = ["cdylib"]
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = { version = "1.0.59" }
 stardog_function = { git = "https://github.com/semantalytics/stardog-webfunctions" }
+
+[dev-dependencies]
+ureq = { version = "2.4.0", features = [ "json" ] }
+base64 = "0.13.0"

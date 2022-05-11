@@ -13,13 +13,13 @@ pub extern fn evaluate(subject: *mut c_char) -> *mut c_char {
 
     let binding = &values["results"]["bindings"][0];
 
-    let string1 = binding["value_1"]["value"].as_str().unwrap();
-    let string2 = binding["value_2"]["value"].as_str().unwrap();
+    let string1 = binding["value_0"]["value"].as_str().unwrap();
+    let string2 = binding["value_1"]["value"].as_str().unwrap();
 
     let result = normalized_damerau_levenshtein(string1, string2);
 
     let sparql_query_result = json!({
-      "head": {"vars":["result"]}, "results":{"bindings":[{"result":{"type":"literal","value": result}}]}
+      "head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0":{"type":"literal","value": result}}]}
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();

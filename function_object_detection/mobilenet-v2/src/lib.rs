@@ -15,7 +15,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
 
     let values: Value = serde_json::from_str(arg_str).unwrap();
     let binding = &values["results"]["bindings"][0];
-    let input_image = decode(binding["value_1"]["value"].as_str().unwrap()).unwrap();
+    let input_image = decode(binding["value_0"]["value"].as_str().unwrap()).unwrap();
 
 
     let prediction =  match get_prediction(&input_model, &input_image) {
@@ -23,9 +23,8 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
       Err(e) => e.to_string(),
     };
 
-
     let sparql_query_result = json!({
-      "head": {"vars":["result"]}, "results":{"bindings":[{"result":{"type":"literal","value": prediction}}]}
+      "head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0":{"type":"literal","value": prediction}}]}
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();

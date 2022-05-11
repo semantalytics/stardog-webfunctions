@@ -1,0 +1,18 @@
+[package]
+name = "upperFirst"
+version = "1.0.0"
+authors = [""]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = { version = "1.0", features = [ "derive" ] }
+serde_json = { version = "1.0.59" }
+voca_rs = { version = "1.14.0" }
+stardog_function = { git = "https://github.com/semantalytics/stardog-webfunctions" }
+
+[dev-dependencies]
+ureq = { version = "2.4.0", features = [ "json" ] }
+base64 = "0.13.0"

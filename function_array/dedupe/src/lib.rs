@@ -11,7 +11,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
     let values: Value = serde_json::from_str(args_str).unwrap();
 
     let binding = &values["results"]["bindings"][0];
-    let array = &binding["value_1"]["value"].as_str().unwrap();
+    let array = &binding["value_0"]["value"].as_str().unwrap();
 
     let mut array_literal_ids: Vec<i64> = array.trim_matches(|c| c == '[' || c == ']').split(',').map(|i| i.trim().parse::<i64>().unwrap()).collect();
 
@@ -20,7 +20,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
     let dedupe_array_literal_ids: Vec<String> = array_literal_ids.iter().map(ToString::to_string).collect();
 
     let sparql_query_result = json!({
-      "head": {"vars":["result"]}, "results":{"bindings":[{"result":{"type":"literal","value": format!("[{}]", dedupe_array_literal_ids.join(",")), "datatype": "tag:stardog:api:array"}}]}
+      "head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0":{"type":"literal","value": format!("[{}]", dedupe_array_literal_ids.join(", ")), "datatype": "tag:stardog:api:array"}}]}
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();

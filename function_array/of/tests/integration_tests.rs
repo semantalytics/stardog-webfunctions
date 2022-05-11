@@ -7,6 +7,29 @@ mod tests {
 
     #[test]
     fn test_append_over_http() {
+
+        //TODO pull prefixes out
+
+        let url = format!("http://{}:{}/{}/query", env::var("STARDOG_HOST").unwrap().as_str(),
+                          env::var("STARDOG_PORT").unwrap().as_str(),
+                          env::var("STARDOG_DB").unwrap().as_str());
+
+        let query_clear_cache = r#"
+            prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/latest/>
+
+            SELECT
+                ?result
+            WHERE {
+                BIND(wf:cacheClear() AS ?result)
+            }
+        "#;
+
+        let _response = ureq::get(&url)
+            .set("Accept", "application/sparql-results+json")
+            .set("Authorization", &get_basic_auth_header("admin", "admin"))
+            .query("query", query_clear_cache)
+            .call();
+
         let query = r#"
             prefix array: <http://wf.semantalytics.com/ipns/k51qzi5uqu5dlx0ttqevj64d3twk31y7hsgnofkqkjaiv11k98lj2rx60kjgv5/stardog/function/array/>
             prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/latest/>
@@ -17,10 +40,6 @@ mod tests {
                 UNNEST(wf:call(array:of, "star", "dog") AS ?result)
             }
             "#;
-
-        let url = format!("http://{}:{}/{}/query", env::var("STARDOG_HOST").unwrap().as_str(),
-                                                   env::var("STARDOG_PORT").unwrap().as_str(),
-                                                   env::var("STARDOG_DB").unwrap().as_str());
 
         let response = ureq::get(&url)
             .set("Accept", "application/sparql-results+json")
@@ -34,15 +53,16 @@ mod tests {
 
                 let bindings = &json["results"]["bindings"];
                 assert_eq!(bindings.as_array().unwrap().len(), 2);
-                let binding = bindings[0];
-                assert_eq!(binding["value_0"]["value"], "star");
-                assert_eq!(binding["value_1"]["value"], "dog");
+                assert_eq!(bindings[0]["result"]["value"], "star");
+                assert_eq!(bindings[1]["result"]["value"], "dog");
             },
             Err(Error::Status(code, response)) => {
                 println!("Code: {} Response: {}", code, response.into_string().unwrap());
                 assert!(false);
             }
-            Err(_) => {}
+            Err(_) => {
+                assert!(false);
+            }
         }
     }
 
