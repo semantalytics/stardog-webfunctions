@@ -19,7 +19,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
     let unique_array_literal_ids: Vec<String> = array_literal_ids.into_iter().unique().map(|i| i.to_string()).collect();
 
     let sparql_query_result = json!({
-      "head": {"vars":["result"]}, "results":{"bindings":[{"result":{"type":"literal","value": format!("[{}]", unique_array_literal_ids.join(", ")), "datatype": "tag:stardog:api:array"}}]}
+      "head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0":{"type":"literal","value": format!("[{}]", unique_array_literal_ids.join(", ")), "datatype": "tag:stardog:api:array"}}]}
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();

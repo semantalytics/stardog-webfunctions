@@ -1,7 +1,7 @@
 use std::mem;
 use std::os::raw::{c_char, c_void};
-
-static PLUGIN_VERSION: i32 = 1;
+use std::ffi::{CStr, CString};
+use serde_json::{Value, json};
 
 #[no_mangle]
 pub extern fn malloc(size: usize) -> *mut c_void {
@@ -28,6 +28,18 @@ extern {
 }
 
 #[no_mangle]
-pub extern fn plugin_version() -> i32 {
-    return PLUGIN_VERSION;
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    let subject = unsafe { CStr::from_ptr(subject).to_str().unwrap() };
+
+    let values: Value = serde_json::from_str(subject).unwrap();
+    let estimate = values["results"]["bindings"][0]["value_0"]["value"].as_str().unwrap();
+    let accuracy = values["results"]["bindings"][0]["value_1"]["value"].as_str().unwrap();
+
+    let result = json!({
+      "head": {"vars":["value_0", "value_1"]}, "results":{"bindings":[
+            {"value_0":{"type":"literal","value": estimate}, "value_1":{"type":"literal","value": accuracy}}
+        ]}
+    }).to_string().into_bytes();
+
+    unsafe { CString::from_vec_unchecked(result) }.into_raw()
 }
