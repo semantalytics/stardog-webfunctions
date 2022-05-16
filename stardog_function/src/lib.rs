@@ -1,7 +1,5 @@
 use std::mem;
 use std::os::raw::{c_char, c_void};
-use std::ffi::{CStr, CString};
-use serde_json::{Value, json};
 
 #[no_mangle]
 pub extern fn malloc(size: usize) -> *mut c_void {
