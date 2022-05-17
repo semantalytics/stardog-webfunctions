@@ -18,9 +18,9 @@ pub extern fn free(pointer: *mut c_void, capacity: usize) {
 }
 
 extern {
-    pub fn mappingDictionaryAdd(buf_addr: i32) -> i64;
+    pub fn mapping_dictionary_add(buf_addr: i32) -> i64;
 }
 
 extern {
-    pub fn mappingDictionaryGet(buf_addr: i64) -> *mut c_char;
+    pub fn mapping_dictionary_get(buf_addr: i64) -> *mut c_char;
 }
