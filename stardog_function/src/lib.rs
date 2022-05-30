@@ -27,8 +27,7 @@ extern {
     pub fn mapping_dictionary_get(buf_addr: i64) -> *mut c_char;
 }
 
-#[no_mangle]
-pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+pub fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
     let subject = unsafe { CStr::from_ptr(subject).to_str().unwrap() };
 
     let values: Value = serde_json::from_str(subject).unwrap();
