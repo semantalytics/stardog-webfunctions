@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
 
@@ -6,9 +5,12 @@ mod tests {
     use std::env;
 
     #[test]
-    fn test_append_over_http() {
+    fn test_decode_over_http() {
 
-        let url = stardog_url();
+        let url = format!("http://{}:{}/{}/query", env::var("STARDOG_HOST").unwrap().as_str(),
+                          env::var("STARDOG_PORT").unwrap().as_str(),
+                          env::var("STARDOG_DB").unwrap().as_str());
+
 
         let query_clear_cache = r#"
             prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/latest/>
@@ -27,14 +29,13 @@ mod tests {
             .call();
 
         let query = r#"
-            prefix array: <http://wf.semantalytics.com/ipns/k51qzi5uqu5dlx0ttqevj64d3twk31y7hsgnofkqkjaiv11k98lj2rx60kjgv5/stardog/function/array/>
-            prefix lang: <http://wf.semantalytics.com/ipns/k51qzi5uqu5dlx0ttqevj64d3twk31y7hsgnofkqkjaiv11k98lj2rx60kjgv5/stardog/propertyfunction/string/lang/>
+            prefix base64: <http://wf.semantalytics.com/ipns/k51qzi5uqu5dlx0ttqevj64d3twk31y7hsgnofkqkjaiv11k98lj2rx60kjgv5/stardog/function/base64/>
             prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/latest/>
 
             SELECT
                 ?result
             WHERE {
-                ?result wf:OUT_call_IN (lang:detectFromAllLanguages "What language do you think this is?")
+                BIND(wf:call(base64:encode, "c3RhcmRvZw==") AS ?result)
             }
             "#;
 
@@ -50,8 +51,7 @@ mod tests {
 
                 let bindings = &json["results"]["bindings"];
                 assert_eq!(bindings.as_array().unwrap().len(), 1);
-                assert_eq!(bindings[0]["result"]["value"], "What language do you think this is?");
-                assert_eq!(bindings[0]["result"]["xml:lang"], "en");
+                assert_eq!(bindings[0]["result"]["value"], "stardog");
             },
             Err(Error::Status(code, response)) => {
                 println!("Code: {} Response: {}", code, response.into_string().unwrap());
@@ -61,16 +61,12 @@ mod tests {
                 assert!(false);
             }
         }
+
+
     }
 
     fn get_basic_auth_header( user: &str, pass: &str ) -> String {
         let usrpw = String::from( user ) + ":" + pass;
         String::from( "Basic " ) + &base64::encode( usrpw.as_bytes())
-    }
-
-    fn stardog_url() -> String {
-        return format!("http://{}:{}/{}/query", env::var("STARDOG_HOST").unwrap().as_str(),
-                          env::var("STARDOG_PORT").unwrap().as_str(),
-                          env::var("STARDOG_DB").unwrap().as_str());
     }
 }

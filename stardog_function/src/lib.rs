@@ -24,3 +24,19 @@ extern {
 extern {
     pub fn mapping_dictionary_get(buf_addr: i64) -> *mut c_char;
 }
+
+#[no_mangle]
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    let subject = unsafe { CStr::from_ptr(subject).to_str().unwrap() };
+
+    let values: Value = serde_json::from_str(subject).unwrap();
+    let estimate = values["results"]["bindings"][0]["cardinality"]["value"].as_str().unwrap();
+
+    let result = json!({
+      "head": {"vars":["cardinality", "accuracy"]}, "results":{"bindings":[
+            {"cardinality":{"type":"literal","value": estimate}, "accuracy":{"type":"literal","value": "ACCURATE"}}
+        ]}
+    }).to_string().into_bytes();
+
+    unsafe { CString::from_vec_unchecked(result) }.into_raw()
+}
