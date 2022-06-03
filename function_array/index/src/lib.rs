@@ -1,6 +1,6 @@
 use std::ffi::{CStr, CString}; 
 use std::os::raw::c_char;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 pub use stardog_function::*;
 
@@ -16,7 +16,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
 
     let index_value_id = array.trim_matches(|c| c == '[' || c == ']').split(',').nth(index).unwrap().trim().parse::<i64>().unwrap();
 
-    return unsafe { mappingDictionaryGet(index_value_id) };
+    return unsafe { mapping_dictionary_get(index_value_id) };
 }
 
 #[no_mangle]
@@ -32,4 +32,9 @@ arguemnts:
 	".to_vec();
 
     unsafe { CString::from_vec_unchecked(output) }.into_raw()
+}
+
+#[no_mangle]
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    return stardog_function::cardinality_estimate(subject);
 }

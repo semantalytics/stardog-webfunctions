@@ -13,7 +13,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
         let sparql_query_result = json!({"head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0": value}]}}).to_string();
 
         let sqr_ptr = unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();
-        let id = unsafe { mappingDictionaryAdd(sqr_ptr as i32) };
+        let id = unsafe { mapping_dictionary_add(sqr_ptr as i32) };
         return id.to_string();
     }).collect::<Vec<String>>().join(", ");
 
@@ -38,4 +38,9 @@ arguemnts:
 	".to_vec();
 
     unsafe { CString::from_vec_unchecked(output) }.into_raw()
+}
+
+#[no_mangle]
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    return stardog_function::cardinality_estimate(subject);
 }

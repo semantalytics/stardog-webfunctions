@@ -21,7 +21,6 @@ pub extern fn evaluate(_args: *mut c_char) -> *mut c_char {
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();
-
 }
 
 #[no_mangle]

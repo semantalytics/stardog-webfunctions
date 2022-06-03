@@ -22,7 +22,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
 
     let mapping_dictionary_add_ptr = unsafe { CString::from_vec_unchecked(mapping_dictionary_add_value) }.into_raw();
 
-    let id = unsafe { mappingDictionaryAdd(mapping_dictionary_add_ptr as i32) };
+    let id = unsafe { mapping_dictionary_add(mapping_dictionary_add_ptr as i32) };
 
     array_literal_ids.push(id);
     let appended_array_literal_ids: Vec<String> = array_literal_ids.iter().map(ToString::to_string).collect();
@@ -47,4 +47,9 @@ arguemnts:
 	".to_vec();
 
     unsafe { CString::from_vec_unchecked(output) }.into_raw()
+}
+
+#[no_mangle]
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    return stardog_function::cardinality_estimate(subject);
 }

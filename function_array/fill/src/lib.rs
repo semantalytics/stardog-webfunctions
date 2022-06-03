@@ -45,3 +45,8 @@ arguemnts:
 
     unsafe { CString::from_vec_unchecked(output) }.into_raw()
 }
+
+#[no_mangle]
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    return stardog_function::cardinality_estimate(subject);
+}

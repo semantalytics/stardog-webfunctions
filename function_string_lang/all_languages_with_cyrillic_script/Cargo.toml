@@ -1,5 +1,5 @@
 [package]
-name = "allLanguagesWithCyrillicScript"
+name = "all_languages_with_cyrillic_script"
 version = "0.1.0"
 authors = ["Zachary Whitley <zachary.whitley@gmail.com>"]
 edition = "2018"

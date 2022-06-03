@@ -1,10 +1,8 @@
 [package]
-name = "detect"
+name = "tag"
 version = "0.1.0"
 authors = ["Zachary Whitley <zachary.whitley@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 crate-type = ["cdylib"]
@@ -13,6 +11,4 @@ crate-type = ["cdylib"]
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = { version = "1.0.59" }
 stardog_function = { git = "https://github.com/semantalytics/stardog-webfunctions" }
-#lingua = { git = "https://github.com/martindisch/lingua-rs", branch="wasm", default_features = false, features = ["afrikaans", "albanian", "arabic", "armenian", "azerbaijani", "basque", "belarusian", "bengali", "bokmal", "bosnian", "bulgarian", "catalan", "chinese", "croatian", "czech", "danish", "dutch", "english", "esperanto", "estonian", "finnish", "french", "ganda", "georgian", "german", "greek", "gujarati", "hebrew", "hindi", "hungarian", "icelandic", "indonesian", "irish", "italian", "japanese", "kazakh", "korean", "latin", "latvian", "lithuanian", "macedonian", "malay", "maori", "marathi", "mongolian", "nynorsk", "persian", "polish", "portuguese", "punjabi", "romanian", "russian", "serbian", "shona", "slovak", "slovene", "somali", "sotho", "spanish", "swahili", "swedish", "tagalog", "tamil", "telugu", "thai", "tsonga", "tswana", "turkish", "ukrainian", "urdu", "vietnamese", "welsh", "xhosa", "yoruba", "zulu" ]}
-lingua = "1.4.0"
-isolang = "2.1.0"
+lingua = { git = "https://github.com/semantalytics/lingua-rs", branch="wasm-feature" }

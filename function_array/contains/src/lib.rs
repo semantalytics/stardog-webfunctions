@@ -18,7 +18,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
 
     let sqr_ptr = unsafe { CString::from_vec_unchecked(mapping_dictionary_sqr.into_bytes()) }.into_raw();
 
-    let id = unsafe { mappingDictionaryAdd(sqr_ptr as i32) };
+    let id = unsafe { mapping_dictionary_add(sqr_ptr as i32) };
 
     let result = array.trim_matches(|c| c == '[' || c == ']').split(',').map(|t| t.trim().parse::<i64>().unwrap()).any(|i| i == id);
 
@@ -42,4 +42,9 @@ arguemnts:
 	".to_vec();
 
     unsafe { CString::from_vec_unchecked(output) }.into_raw()
+}
+
+#[no_mangle]
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    return stardog_function::cardinality_estimate(subject);
 }

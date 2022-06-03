@@ -18,7 +18,7 @@ pub extern fn evaluate(arg: *mut c_char) -> *mut c_char {
     let rev_array_literal_ids: Vec<String> = array_literal_ids.into_iter().rev().map(|i| i.to_string()).collect();
 
     let sparql_query_result = json!({
-      "head": {"vars":["result"]}, "results":{"bindings":[{"result":{"type":"literal","value": format!("[{}]", rev_array_literal_ids.join(", ")), "datatype": "tag:stardog:api:array"}}]}
+      "head": {"vars":["value_0"]}, "results":{"bindings":[{"value_0":{"type":"literal","value": format!("[{}]", rev_array_literal_ids.join(", ")), "datatype": "tag:stardog:api:array"}}]}
     }).to_string();
 
     return unsafe { CString::from_vec_unchecked(sparql_query_result.into_bytes()) }.into_raw();
@@ -37,4 +37,9 @@ arguemnts:
 	".to_vec();
 
     unsafe { CString::from_vec_unchecked(output) }.into_raw()
+}
+
+#[no_mangle]
+pub extern fn cardinality_estimate(subject: *mut c_char) -> *mut c_char {
+    return stardog_function::cardinality_estimate(subject);
 }

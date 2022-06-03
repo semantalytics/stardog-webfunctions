@@ -1,10 +1,15 @@
 [workspace]
 
 members = [
-	"whatlang",
+	"all_languages",
+	"all_languages_with_arabic_script",
+	"all_languages_with_cyrillic_script",
+	"all_languages_with_devanagari_script",
+	"all_languages_with_latin_script",
+	"all_spoken_languages",
 	"detect",
-	"detectFromAllSpoken",
-	"detectFrom",
+	"detect_confidence",
+	"tag",
 ]
 
 [profile.release]

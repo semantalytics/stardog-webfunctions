@@ -1,5 +1,5 @@
 [package]
-name = "sqrt_2"
+name = "exponent"
 version = "0.1.0"
 authors = ["Zachary Whitley <zachary.whitley@gmail.com>"]
 edition = "2018"

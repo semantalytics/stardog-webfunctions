@@ -26,9 +26,9 @@ mod tests {
             .query("query", query_clear_cache)
             .call();
 
-        let query = r#"
+        let query = format!("prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/{}/>", env::var("WEBFUNCTION_PLUGIN_VERSION").unwrap().as_str()) +
+            r#"
             prefix array: <http://wf.semantalytics.com/ipns/k51qzi5uqu5dlx0ttqevj64d3twk31y7hsgnofkqkjaiv11k98lj2rx60kjgv5/stardog/function/array/>
-            prefix wf: <http://semantalytics.com/2021/03/ns/stardog/webfunction/latest/>
 
             SELECT
                 ?result
@@ -40,7 +40,7 @@ mod tests {
         let response = ureq::get(&url)
             .set("Accept", "application/sparql-results+json")
             .set("Authorization", &get_basic_auth_header("admin", "admin"))
-            .query("query", query)
+            .query("query", &query)
             .call();
 
         match response {
